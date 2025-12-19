@@ -1,3 +1,5 @@
+<img src="poster_final.webp" alt="poster">
+
 ## AI Exam Preparation Assistant
 
 A full-stack AI-powered exam preparation assistant with a modern, responsive UI and FastAPI backend.
