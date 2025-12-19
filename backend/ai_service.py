@@ -4,12 +4,12 @@ from google import genai
 from pydantic import BaseModel
 from models import QuestionRequest, QuestionResponse, EvaluationRequest, EvaluationResponse
 load_dotenv()
+
 class AIServiceError(Exception):
     """Custom exception for AI service related issues."""
 
 class AIService:
     def __init__(self) -> None:
-        # The SDK automatically looks for GEMINI_API_KEY environment variable
         self.client = genai.Client(api_key=os.getenv("gem"))
         self.model_id = "gemini-2.5-flash" 
 
@@ -27,29 +27,30 @@ class AIService:
 	        )
 	        return response.parsed
 	    except Exception as e:
-	        print(f"!!! GEMINI ERROR: {e}") # This will show in your terminal
+	        print(f"!!! GEMINI ERROR: {e}")
 	        raise e
     def evaluate_answer(self, payload: EvaluationRequest) -> EvaluationResponse:
-        prompt =  f"""
-    You are an expert academic grader. 
-    Evaluate the following student response against the correct answer.
-    
-    Question: {payload.questionText}
-    Correct Answer: {payload.correctAnswer}
-    Student's Answer: {payload.studentAnswer}
-    
-    Provide a score (0-100), detailed feedback, and specific strengths and improvements.
-    """      
-        try:
-            response = self.client.models.generate_content(
-                model=self.model_id,
-                contents=prompt,
-                config={
-                "response_mime_type": "application/json",
-                "response_schema": EvaluationResponse,
-                },
-            )
-            return response.parsed
-        except Exception as e:
-            print(f"!!! EVALUATION ERROR: {e}")
-            raise e
+    # Use a prompt focused on grading the student's specific answer
+	    prompt = f"""
+	    You are an expert academic grader. 
+	    Compare the student's answer to the correct reference and provide a score.
+	    
+	    Question: {payload.questionText}
+	    Correct Answer: {payload.correctAnswer}
+	    Student's Answer: {payload.studentAnswer}
+	    """
+	    
+	    try:
+	        response = self.client.models.generate_content(
+	            model=self.model_id,
+	            contents=prompt,
+	            config={
+	                "response_mime_type": "application/json",
+	                "response_schema": EvaluationResponse,
+	            },
+	        )
+	        return response.parsed
+	    except Exception as e:
+	        # Check your console/terminal for this print statement to see the exact error!
+	        print(f"!!! EVALUATION CRASH: {e}")
+	        raise e
