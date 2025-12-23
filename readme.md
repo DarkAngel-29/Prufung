@@ -29,7 +29,7 @@ pip install -r requirements.txt
 Create a `.env` file in the `backend` directory:
 
 ```bash
-AI_API_KEY=your_real_ai_key_optional
+gem=your_real_ai_key_optional
 ```
 
 Run the backend on port **8000**:
