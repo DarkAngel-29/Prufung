@@ -27,7 +27,6 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => localStorage.getItem("loggedIn") === "true"
   );
-  
   const [subject, setSubject] = useState<string>("Mathematics");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [currentQuestion, setCurrentQuestion] = useState<QuestionResponse | null>(null);
@@ -192,6 +191,7 @@ const App: React.FC = () => {
             </button>
             <button
             onClick={() => {
+              localStorage.removeItem("token");
               localStorage.removeItem("loggedIn");
               setIsLoggedIn(false);
             }}

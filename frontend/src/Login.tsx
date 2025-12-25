@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from "axios";
 
 export default function Login({ onLogin }: { onLogin: () => void }) {
 
@@ -6,17 +7,24 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsLoading(true);
-    // Simulate login
-    setTimeout(() => {
-    setIsLoading(false);
-    localStorage.setItem("loggedIn", "true");
-    onLogin();
-}, 1500);
-
-      
+    try {
+      const res = await axios.post("http://127.0.0.1:8000/login", {
+        email,
+        password,
+      });
+  
+      localStorage.setItem("token", res.data.access_token);
+      localStorage.setItem("loggedIn", "true");
+      onLogin();
+    } catch (err) {
+      alert("Invalid credentials");
+    } finally {
+      setIsLoading(false);
+    }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">

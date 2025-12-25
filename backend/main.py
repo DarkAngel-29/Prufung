@@ -1,7 +1,21 @@
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from ai_service import AIService, AIServiceError
-from models import QuestionRequest, EvaluationRequest
+from pydantic import BaseModel
+from dotenv import load_dotenv
+load_dotenv()
+import os
+from pymongo import MongoClient
+from passlib.context import CryptContext
+from jose import jwt
+from models import QuestionRequest, EvaluationRequest, AuthRequest
+
+client = MongoClient(os.getenv("MONGO_URI"))
+db = client["prufung"]
+users = db["users"]
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+JWT_SECRET = os.getenv("JWT_SECRET")
 
 app = FastAPI(title="DSARG_8 AI Exam Assistant")
 
@@ -14,6 +28,27 @@ app.add_middleware(
 )
 
 ai_service = AIService()
+
+@app.post("/signup")
+async def signup(data: AuthRequest):
+    if users.find_one({"email": data.email}):
+        raise HTTPException(status_code=400, detail="User already exists")
+
+    hashed = pwd_context.hash(data.password)
+    users.insert_one({"email": data.email, "password": hashed})
+
+    return {"message": "User created"}
+
+
+@app.post("/login")
+async def login(data: AuthRequest):
+    user = users.find_one({"email": data.email})
+    if not user or not pwd_context.verify(data.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    token = jwt.encode({"email": data.email}, JWT_SECRET, algorithm="HS256")
+    return {"access_token": token}
+
 
 @app.post("/generate-question")
 async def generate_q(request: QuestionRequest):
@@ -44,6 +79,8 @@ async def evaluate_a(payload: dict = Body(...)):
         print(f"Evaluation failed: {e}")
         # Return 422 if data is missing, 500 if AI fails
         raise HTTPException(status_code=422, detail="Missing fields or AI error")
+
+
 
 if __name__ == "__main__":
     import uvicorn
