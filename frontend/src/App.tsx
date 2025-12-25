@@ -8,7 +8,7 @@ import {
   EvaluationResponse,
   QuestionResponse,
 } from "./types/api";
-
+import Login from "./Login";
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:8000";
 
@@ -24,6 +24,10 @@ const subjects = ["Mathematics", "Physics", "Biology", "Chemistry", "History", "
 
 const App: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => localStorage.getItem("loggedIn") === "true"
+  );
+  
   const [subject, setSubject] = useState<string>("Mathematics");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [currentQuestion, setCurrentQuestion] = useState<QuestionResponse | null>(null);
@@ -149,12 +153,17 @@ const App: React.FC = () => {
   };
 
   const isMCQ = currentQuestion?.type === "multiple-choice";
-
+  if (!isLoggedIn) {
+    return <Login onLogin={() => setIsLoggedIn(true)} />;
+  }
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {/* Header */}
         <header className="mb-6 sm:mb-10">
+        
+
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/50">
@@ -169,6 +178,7 @@ const App: React.FC = () => {
                 </p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
             <button
               onClick={toggleTheme}
               className="p-2.5 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-800 dark:to-slate-700 hover:from-amber-200 hover:to-orange-200 dark:hover:from-slate-700 dark:hover:to-slate-600 border border-amber-300 dark:border-slate-700 transition-all duration-200 shadow-sm"
@@ -180,6 +190,15 @@ const App: React.FC = () => {
                 <Moon className="w-5 h-5 text-slate-700 dark:text-slate-200" />
               )}
             </button>
+            <button
+            onClick={() => {
+              localStorage.removeItem("loggedIn");
+              setIsLoggedIn(false);
+            }}
+            className="p-2.5 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-800 dark:to-slate-700 hover:from-amber-200 hover:to-orange-200 dark:hover:from-slate-700 dark:hover:to-slate-600 border border-amber-300 dark:border-slate-700 transition-all duration-200 shadow-sm">
+            Logout
+            </button>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-slate-700 dark:text-slate-400">
             <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 border border-purple-300 dark:border-purple-700 px-3 py-1 text-purple-800 dark:text-purple-200 font-medium shadow-sm">
