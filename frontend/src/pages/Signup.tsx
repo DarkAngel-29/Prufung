@@ -24,9 +24,11 @@ export default function SignUp({ onBack }: { onBack: () => void }) {
     setIsLoading(true);
   
     try {
+      console.log("FULLNAME BEFORE SUBMIT:", fullName);
       await axios.post("http://localhost:8000/signup", {
         email,
         password,
+        fullName,
       });
   
       alert("Account created! Please log in.");
@@ -48,6 +50,13 @@ export default function SignUp({ onBack }: { onBack: () => void }) {
     setAgreedToTerms(false);
     setIsLoading(false);
   };
+
+  const isFormValid =
+  fullName.trim() !== "" &&
+  email.trim() !== "" &&
+  password.trim() !== "" &&
+  confirmPassword.trim() !== "" &&
+  agreedToTerms;
 
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4 relative">
@@ -159,7 +168,7 @@ export default function SignUp({ onBack }: { onBack: () => void }) {
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || !isFormValid}
               className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 focus:ring-offset-gray-900 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (

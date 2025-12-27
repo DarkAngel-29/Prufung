@@ -40,7 +40,7 @@ const App: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [showAnalytics, setShowAnalytics] = useState<boolean>(true);
-
+  const fullName = localStorage.getItem("fullName");
   const [totalQuestions, setTotalQuestions] = useState<number>(0);
   const [correctAnswers, setCorrectAnswers] = useState<number>(0);
   const [cumulativeScore, setCumulativeScore] = useState<number>(0);
@@ -182,6 +182,9 @@ const App: React.FC = () => {
                 <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
                   AI Exam Prep Assistant
                 </h1>
+                    {fullName && (<p className="text-sm text-slate-600 dark:text-slate-300">
+                     Hey there, <span className="font-semibold">{fullName}</span> 👋</p>)}
+
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
                   Generate smart questions, practice actively, and get instant feedback powered by AI.
                 </p>
@@ -203,6 +206,7 @@ const App: React.FC = () => {
             onClick={() => {
               localStorage.removeItem("token");
               localStorage.removeItem("loggedIn");
+              localStorage.removeItem("fullName");
               setIsLoggedIn(false);
             }}
             className="p-2.5 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-slate-800 dark:to-slate-700 hover:from-amber-200 hover:to-orange-200 dark:hover:from-slate-700 dark:hover:to-slate-600 border border-amber-300 dark:border-slate-700 transition-all duration-200 shadow-sm">

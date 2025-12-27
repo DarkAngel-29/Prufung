@@ -3,23 +3,16 @@ from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from ai_service import AIService, AIServiceError
 from pydantic import BaseModel
+from db import users
 from dotenv import load_dotenv
 load_dotenv()
-print("MONGO_URI =", os.getenv("MONGO_URI"))
 from pymongo import MongoClient
 from passlib.context import CryptContext
 from jose import jwt
-from models import QuestionRequest, EvaluationRequest, AuthRequest
+from models import QuestionRequest, EvaluationRequest, SignupRequest, LoginRequest
 import certifi
 
-client = MongoClient(
-    os.getenv("MONGO_URI"),
-    tls=True,
-    tlsCAFile=certifi.where()
-)
 
-db = client["prufung"]
-users = db["users"]
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -35,7 +28,8 @@ app.add_middleware(
 
 ai_service = AIService()
 @app.post("/signup")
-async def signup(data: AuthRequest):
+async def signup(data: SignupRequest):
+    print("SIGNUP PAYLOAD:", data.dict())
     try:
         if users.find_one({"email": data.email}):
             raise HTTPException(status_code=400, detail="User already exists")
@@ -43,7 +37,9 @@ async def signup(data: AuthRequest):
         hashed = pwd_context.hash(data.password)
         users.insert_one({
             "email": data.email,
-            "password": hashed
+            "password": hashed,
+            "fullName": data.fullName or ""
+
         })
 
         return {"message": "User created"}
@@ -56,13 +52,16 @@ async def signup(data: AuthRequest):
 
 
 @app.post("/login")
-async def login(data: AuthRequest):
+async def login(data: LoginRequest):
     user = users.find_one({"email": data.email})
     if not user or not pwd_context.verify(data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     token = jwt.encode({"email": data.email}, JWT_SECRET, algorithm="HS256")
-    return {"access_token": token}
+    return {
+        "access_token": token, 
+        "fullName": user.get("fullName", "")
+}
 
 
 @app.post("/generate-question")

@@ -21,9 +21,11 @@ export default function Login({
         email,
         password,
       });
-  
       localStorage.setItem("token", res.data.access_token);
       localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("fullName", res.data.fullName);
+onLogin();
+
       onLogin();
     } catch (err) {
       alert("Invalid credentials");

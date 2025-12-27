@@ -1,10 +1,15 @@
 from pydantic import BaseModel
-from typing import List, Literal
+from typing import List, Literal, Optional
 
-class AuthRequest(BaseModel):
+class SignupRequest(BaseModel):
     email: str
     password: str
+    fullName: Optional[str] = None
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+    
 class QuestionRequest(BaseModel):
     subject: str
     difficulty: Literal["easy", "medium", "hard"]
