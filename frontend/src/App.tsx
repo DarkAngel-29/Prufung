@@ -8,8 +8,8 @@ import {
   EvaluationResponse,
   QuestionResponse,
 } from "./types/api";
-import Login from "./Login";
-import SignUp from "./Signup";
+import Login from "./pages/Login";
+import SignUp from "./pages/Signup";
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:8000";
 
