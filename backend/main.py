@@ -1,16 +1,23 @@
+import os
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from ai_service import AIService, AIServiceError
 from pydantic import BaseModel
 from dotenv import load_dotenv
 load_dotenv()
-import os
+print("MONGO_URI =", os.getenv("MONGO_URI"))
 from pymongo import MongoClient
 from passlib.context import CryptContext
 from jose import jwt
 from models import QuestionRequest, EvaluationRequest, AuthRequest
+import certifi
 
-client = MongoClient(os.getenv("MONGO_URI"))
+client = MongoClient(
+    os.getenv("MONGO_URI"),
+    tls=True,
+    tlsCAFile=certifi.where()
+)
+
 db = client["prufung"]
 users = db["users"]
 
@@ -19,25 +26,33 @@ JWT_SECRET = os.getenv("JWT_SECRET")
 
 app = FastAPI(title="DSARG_8 AI Exam Assistant")
 
-# ENABLE CORS: Essential so your React App (App.tsx) can talk to this Backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In a hackathon, allow all; in production, restrict this
+    allow_origins=["*"],  
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 ai_service = AIService()
-
 @app.post("/signup")
 async def signup(data: AuthRequest):
-    if users.find_one({"email": data.email}):
-        raise HTTPException(status_code=400, detail="User already exists")
+    try:
+        if users.find_one({"email": data.email}):
+            raise HTTPException(status_code=400, detail="User already exists")
 
-    hashed = pwd_context.hash(data.password)
-    users.insert_one({"email": data.email, "password": hashed})
+        hashed = pwd_context.hash(data.password)
+        users.insert_one({
+            "email": data.email,
+            "password": hashed
+        })
 
-    return {"message": "User created"}
+        return {"message": "User created"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("SIGNUP ERROR:", e)
+        raise HTTPException(status_code=500, detail="Database error")
 
 
 @app.post("/login")

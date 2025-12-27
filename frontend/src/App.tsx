@@ -9,6 +9,7 @@ import {
   QuestionResponse,
 } from "./types/api";
 import Login from "./Login";
+import SignUp from "./Signup";
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:8000";
 
@@ -27,6 +28,7 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => localStorage.getItem("loggedIn") === "true"
   );
+  const [showSignup, setShowSignup] = useState(false);
   const [subject, setSubject] = useState<string>("Mathematics");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [currentQuestion, setCurrentQuestion] = useState<QuestionResponse | null>(null);
@@ -153,8 +155,16 @@ const App: React.FC = () => {
 
   const isMCQ = currentQuestion?.type === "multiple-choice";
   if (!isLoggedIn) {
-    return <Login onLogin={() => setIsLoggedIn(true)} />;
+    return showSignup ? (
+      <SignUp onBack={() => setShowSignup(false)} />
+    ) : (
+      <Login
+        onLogin={() => setIsLoggedIn(true)}
+        onSignup={() => setShowSignup(true)}
+      />
+    );
   }
+  
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-200">

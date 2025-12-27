@@ -1,40 +1,64 @@
 import { useState } from 'react';
 import axios from "axios";
 
-export default function Login({
-  onLogin,
-  onSignup,
-}: {
-  onLogin: () => void;
-  onSignup: () => void;
-}) {
-
-
+export default function SignUp({ onBack }: { onBack: () => void }) {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
+  
   const handleSubmit = async () => {
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+  
+    if (!agreedToTerms) {
+      alert("Please agree to the Terms and Privacy Policy");
+      return;
+    }
+  
     setIsLoading(true);
+  
     try {
-      const res = await axios.post("http://127.0.0.1:8000/login", {
+      await axios.post("http://localhost:8000/signup", {
         email,
         password,
       });
   
-      localStorage.setItem("token", res.data.access_token);
-      localStorage.setItem("loggedIn", "true");
-      onLogin();
-    } catch (err) {
-      alert("Invalid credentials");
+      alert("Account created! Please log in.");
+      onBack(); // go back to Login screen
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.response?.data?.detail || "Signup failed");
     } finally {
       setIsLoading(false);
     }
   };
   
 
+  const handleReset = () => {
+    setFullName('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setAgreedToTerms(false);
+    setIsLoading(false);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4 relative">
+      {/* Back to Login Button - Top Right */}
+      <button
+        onClick={onBack}
+        className="absolute top-6 right-6 px-4 py-2 text-sm font-semibold rounded-xl bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700 hover:text-white transition"
+      >
+        Back to Login
+      </button>
+
       <div className="w-full max-w-md">
         {/* Logo and Header */}
         <div className="text-center mb-8">
@@ -43,13 +67,28 @@ export default function Login({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">AI Exam Prep Assistant</h1>
-          <p className="text-gray-400">Sign in to continue your learning journey</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Create Your Account</h1>
+          <p className="text-gray-400">Start your AI-powered learning journey today</p>
         </div>
 
-        {/* Login Form */}
+        {/* Sign Up Form */}
         <div className="bg-gray-900 rounded-2xl p-8 shadow-2xl border border-gray-800">
-          <div className="space-y-6">
+          <div className="space-y-5">
+            {/* Full Name Input */}
+            <div>
+              <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-2">
+                Full Name
+              </label>
+              <input
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                placeholder="John Doe"
+              />
+            </div>
+
             {/* Email Input */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
@@ -78,20 +117,43 @@ export default function Login({
                 className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
                 placeholder="••••••••"
               />
+              <p className="mt-1 text-xs text-gray-500">Must be at least 8 characters</p>
             </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 bg-gray-800 border-gray-700 rounded text-purple-600 focus:ring-purple-600 focus:ring-offset-gray-900"
-                />
-                <span className="ml-2 text-sm text-gray-400">Remember me</span>
+            {/* Confirm Password Input */}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
+                Confirm Password
               </label>
-              <button className="text-sm text-purple-400 hover:text-purple-300 transition">
-                Forgot password?
-              </button>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition"
+                placeholder="••••••••"
+              />
+            </div>
+
+            {/* Terms Agreement */}
+            <div className="flex items-start">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="w-4 h-4 mt-1 bg-gray-800 border-gray-700 rounded text-purple-600 focus:ring-purple-600 focus:ring-offset-gray-900"
+              />
+              <label htmlFor="terms" className="ml-2 text-sm text-gray-400 cursor-pointer">
+                I agree to the{' '}
+                <button className="text-purple-400 hover:text-purple-300 transition">
+                  Terms of Service
+                </button>
+                {' '}and{' '}
+                <button className="text-purple-400 hover:text-purple-300 transition">
+                  Privacy Policy
+                </button>
+              </label>
             </div>
 
             {/* Submit Button */}
@@ -106,10 +168,10 @@ export default function Login({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Signing in...
+                  Creating account...
                 </span>
               ) : (
-                'Sign In'
+                'Create Account'
               )}
             </button>
           </div>
@@ -120,11 +182,11 @@ export default function Login({
               <div className="w-full border-t border-gray-800"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gray-900 text-gray-500">Or continue with</span>
+              <span className="px-2 bg-gray-900 text-gray-500">Or sign up with</span>
             </div>
           </div>
 
-          {/* Social Login Buttons */}
+          {/* Social Sign Up Buttons */}
           <div className="grid grid-cols-2 gap-3">
             <button className="flex items-center justify-center px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-750 transition">
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
@@ -143,18 +205,18 @@ export default function Login({
             </button>
           </div>
 
-          {/* Sign Up Link */}
+          {/* Login Link */}
           <p className="mt-6 text-center text-sm text-gray-400">
-            Don't have an account?{' '}
-            <button onClick={onSignup} className="text-purple-400 hover:text-purple-300 font-medium transition">
-              Sign up for free
+            Already have an account?{' '}
+            <button onClick={onBack} className="text-purple-400 hover:text-purple-300 font-medium transition">
+              Sign in
             </button>
           </p>
         </div>
 
         {/* Footer */}
         <p className="mt-6 text-center text-xs text-gray-600">
-          By signing in, you agree to our{' '}
+          By creating an account, you agree to our{' '}
           <button className="text-gray-500 hover:text-gray-400 transition">Terms</button>
           {' '}and{' '}
           <button className="text-gray-500 hover:text-gray-400 transition">Privacy Policy</button>
