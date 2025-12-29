@@ -35,7 +35,7 @@ gem=your_real_ai_key_optional
 Run the backend on port **8000**:
 
 ```bash
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload 
 ```
 
 ---
